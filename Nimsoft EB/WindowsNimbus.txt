@@ -1,0 +1,31 @@
+mkdir 'C:\tmp\nimsoft'
+cd 'C:\tmp\nimsoft'
+
+#
+# Download nms-robot-vars.cfg and replace EB variables in file
+#
+"Download nms-robot-vars.cfg..."
+$currentDir = (Get-Location).Path
+$ConfigFile = "C:\tmp\nimsoft\nms-robot-vars.cfg"
+
+$wc = New-Object System.Net.WebClient
+$wc.DownloadFile("{{ nms_robot }}", $ConfigFile)
+
+"Host Profiles CFG Saved in: $ConfigFile"
+
+elasticbox config -i $ConfigFile -o $ConfigFile
+
+#
+# Download install file
+#
+"Download nimsoft-nimsoft-robot-x64.exe..."
+$currentDir = (Get-Location).Path
+$InstallFile = "C:\tmp\nimsoft\nimsoft-robot-x64.exe"
+
+$wc = New-Object System.Net.WebClient
+$wc.DownloadFile("{{INSTALLER}}", $InstallFile)
+"Install File: $InstallFile"
+
+"Now execute Nimsoft Installer.."
+$process = Start-Process "$InstallFile" -PassThru -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"
+
