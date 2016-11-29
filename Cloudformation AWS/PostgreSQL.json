@@ -1,0 +1,140 @@
+{
+    "Parameters": {
+        "DBUser": {
+            "NoEcho": "true",
+            "Description": "The database admin account username",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "16",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+        },
+        "DBPassword": {
+            "NoEcho": "true",
+            "Description": "The database admin account password",
+            "Type": "String",
+            "MinLength": "1",
+            "MaxLength": "16",
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "must begin with a letter and contain only alphanumeric characters."
+        },
+        "VPCID": {
+            "Description": "The VPC ID",
+            "Type": "String",
+            "Default": "vpc-xxxxxxxx"
+        },
+        "SubnetList": {
+            "Description": "List of Subnets",
+            "Type": "List<AWS::EC2::Subnet::Id>",
+            "ConstraintDescription": "Must be a list of valid Subnets"
+        }
+    },
+    "Resources": {
+        "DB": {
+            "Properties": {
+                "AllocatedStorage": "10",
+                "AllowMajorVersionUpgrade": true,
+                "AutoMinorVersionUpgrade": false,
+                "BackupRetentionPeriod": "7",
+                "CopyTagsToSnapshot": true,
+                "DBInstanceClass": "db.m3.large",
+                "DBParameterGroupName": {
+                    "Ref": "DBParameterGroup95"
+                },
+                "DBSubnetGroupName": {
+                    "Ref": "DBSubnetGroup"
+                },
+                "Engine": "postgres",
+                "EngineVersion": "9.5.4",
+                "MasterUserPassword": {
+                    "Ref": "DBPassword"
+                },
+                "MasterUsername": {
+                    "Ref": "DBUser"
+                },
+                "MultiAZ": false,
+                "PreferredBackupWindow": "20:00-21:00",
+                "PreferredMaintenanceWindow": "Thu:07:00-Thu:08:00",
+                "StorageType": "gp2",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "rds-postgresql"
+                    }
+                ],
+                "VPCSecurityGroups": [
+                    {
+                        "Ref": "DBSecurityGroup"
+                    }
+                ]
+            },
+            "Type": "AWS::RDS::DBInstance"
+        },
+        "DBAccessSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "Security Group for accessing DB",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "rds-access-sg"
+                    }
+                ],
+                "VpcId": { "Ref": "VPCID" }
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "DBParameterGroup95": {
+            "Properties": {
+                "Description": "RDS Parameter Group",
+                "Family": "postgres9.5",
+                "Parameters": {
+                    "max_connections": "{DBInstanceClassMemory/10485760}"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "rds-parameter-group"
+                    }
+                ]
+            },
+            "Type": "AWS::RDS::DBParameterGroup"
+        },
+        "DBSecurityGroup": {
+            "Properties": {
+                "GroupDescription": "DB Security Group",
+                "SecurityGroupIngress": [
+                    {
+                        "FromPort": 5432,
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Ref": "DBAccessSecurityGroup"
+                        },
+                        "ToPort": 5432
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "rds-sg"
+                    }
+                ],
+                "VpcId": { "Ref": "VPCID" }
+
+            },
+            "Type": "AWS::EC2::SecurityGroup"
+        },
+        "DBSubnetGroup": {
+            "Properties": {
+                "DBSubnetGroupDescription": "RDS Subnet Group",
+                "SubnetIds": { "Ref": "SubnetList" },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "rds-subnet-group"
+                    }
+                ]
+            },
+            "Type": "AWS::RDS::DBSubnetGroup"
+        }
+    }
+}
