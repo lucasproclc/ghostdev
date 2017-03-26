@@ -13,7 +13,7 @@ configuration AzureCourseConfig
 			Ensure					='Present'
 			GroupName				='DevGroup'
 		}
-		Accountant Group
+		Group Accountants
 		{
 			Ensure					='Absent'
 			GroupName				='AcctGroup'
@@ -22,7 +22,7 @@ configuration AzureCourseConfig
 		{
 			Ensure	="Present"
 			Type	="Directory"
-			DestinationPath	="C:\Users\Public\Document\MyDemo
+			DestinationPath	="C:\Users\Public\Document\MyDemo"
 		}
 		Log AfterDirectoryCreate
 		{
